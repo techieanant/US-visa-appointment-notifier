@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const {parseISO, compareAsc, isBefore, format} = require('date-fns')
 require('dotenv').config();
 
-const {delay, sendEmail, logStep} = require('./utils');
+const {delay, logStep, sendPush } = require('./utils');
 const {siteInfo, loginCred, IS_PROD, NEXT_SCHEDULE_POLL, MAX_NUMBER_OF_POLL, NOTIFY_ON_DATE_BEFORE} = require('./config');
 
 let isLoggedIn = false;
@@ -32,14 +32,11 @@ const login = async (page) => {
 const notifyMe = async (earliestDate) => {
   const formattedDate = format(earliestDate, 'dd-MM-yyyy');
   logStep(`sending an email to schedule for ${formattedDate}`);
-  await sendEmail({
-    subject: `We found an earlier date ${formattedDate}`,
-    text: `Hurry and schedule for ${formattedDate} before it is taken.`
-  })
+  await sendPush(formattedDate);
 }
 
 const checkForSchedules = async (page) => {
-  logStep('checking for schedules');
+  logStep('Checking for schedules');
   await page.goto(siteInfo.APPOINTMENTS_JSON_URL);
 
   const originalPageContent = await page.content();
@@ -55,7 +52,7 @@ const checkForSchedules = async (page) => {
       throw "Failed to parse dates, probably because you are not logged in";
     }
 
-    const dates =parsedBody.map(item => parseISO(item.date));
+    const dates = parsedBody.map(item => parseISO(item.date));
     const [earliest] = dates.sort(compareAsc)
 
     return earliest;
@@ -68,7 +65,7 @@ const checkForSchedules = async (page) => {
 
 
 const process = async (browser) => {
-  logStep(`starting process with ${maxTries} tries left`);
+  logStep(`Starting process with ${maxTries} tries left`);
 
   if(maxTries-- <= 0){
     console.log('Reached Max tries')

@@ -1,9 +1,5 @@
-const Mailgun = require('mailgun.js');
-const formData = require('form-data');
-
-const mailgun = new Mailgun(formData);
 const config = require('./config');
-const mg = mailgun.client({username: 'api', key: config.mailgun.API_KEY});
+const fetch = require('node-fetch');
 
 const debug = async (page, logName, saveScreenShot) => {
   if(saveScreenShot){
@@ -17,14 +13,26 @@ const debug = async (page, logName, saveScreenShot) => {
 
 const delay = timeout => new Promise(resolve => setTimeout(resolve, timeout));
 
-const sendEmail = async (params) => {
-  const data = {
-    from: 'No reply <noreply@visa-schedule-check>',
-    to: config.NOTIFY_EMAILS,
-    subject: 'Hello US VISA schedules',
-    ...params
-  };
-  await mg.messages.create(config.mailgun.DOMAIN, data)
+const sendPush = async (formattedDate) => {
+  try {
+    let l = await fetch("https://api.pushbullet.com/v2/pushes", {
+      body: JSON.stringify({
+        "body": `Earliest date available ${formattedDate}`,
+        "title": "US Visa",
+        "type": "note"
+      }),
+      headers: {
+      "Access-Token": config.PUSHBULLET_ACCESS_TOKEN,
+      "Content-Type": "application/json"
+      },
+      method: "POST"
+    });
+    if(!l.ok) {
+      throw new Error(l.body);
+    }
+  } catch(e) {
+    logStep("Error", e)
+  }
 };
 
 const logStep = (stepTitle) => {
@@ -34,6 +42,6 @@ const logStep = (stepTitle) => {
 module.exports = {
   debug,
   delay,
-  sendEmail,
+  sendPush,
   logStep
 }

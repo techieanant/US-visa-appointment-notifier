@@ -19,9 +19,6 @@ $ npm start
 ...
 ```
 
-![email notification sample](./email-screen-shot.png)
-
-
 ## How it works
 
 * Logs you into the portal
@@ -35,10 +32,9 @@ $ npm start
 
 copy the example configuration file exampe in `.env.example`, rename the copied version to `.env` and replace the values.
 
-### MailGun config values 
+### PusbBullet config values 
 
-You can create a free account with https://www.mailgun.com/ which should be sufficient and use the provided sandbox domain on your dashboard. The `MAILGUN_API_KEY` can be found in your Mailgun dashboard, it starts with `key-xxxxxx`. 
-
+You can create a free account with pushbullet and generate an access token at https://www.pushbullet.com/#settings/account
 
 ## FAQ
 
